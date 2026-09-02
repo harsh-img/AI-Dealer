@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { Users, PhoneCall, AlertCircle, TrendingUp } from 'lucide-react'
+import { Users, PhoneCall, AlertCircle, TrendingUp, Filter } from 'lucide-react'
 
 // Gauge SVG Helper for KPI circular indicators matching reference
 const CircularGauge = ({ value, label, displayValue, color = '#0284c7' }) => {
@@ -62,12 +62,31 @@ const Dashboard = () => {
   const maxTotal = 260
   const barMaxHeightPx = 130
 
-  // Lead List Management rows matching reference
+  // Lead List Management rows
   const leadLists = [
     { id: 1, source: 'Marketing Leads Q3', status: 'Imported' },
     { id: 2, source: 'Marketing Leads Q3', status: 'Complete' },
     { id: 3, source: 'Marketing Leads Q4', status: 'Imported' }
   ]
+
+  // 1. DYNAMIC FILTER 1: Live Call Status Filter
+  const filteredLiveCalls = liveCalls.filter((call) => {
+    if (agentFilter === 'AI Agents') return call.agentType === 'AI Agents'
+    if (agentFilter === 'Live Agents') return call.agentType === 'Live Agents'
+    return true
+  })
+
+  // 2. DYNAMIC FILTER 2: Lead List Management Source Filter
+  const filteredLeadLists = leadLists.filter((item) => {
+    if (leadSourceFilter === 'All Source') return true
+    return item.source === leadSourceFilter
+  })
+
+  // 3. DYNAMIC FILTER 3: Recent Activity Feed Result Filter
+  const filteredActivityFeed = activityFeed.filter((act) => {
+    if (activityResultFilter === 'All result') return true
+    return act.result === activityResultFilter
+  })
 
   return (
     <div className="space-y-6 pt-2 pb-12">
@@ -148,15 +167,15 @@ const Dashboard = () => {
             <select
               value={pipelineTimeframe}
               onChange={(e) => setPipelineTimeframe(e.target.value)}
-              className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-600 focus:outline-none cursor-pointer"
+              className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-600 focus:outline-none cursor-pointer font-medium"
             >
-              <option>Today</option>
-              <option>This Week</option>
-              <option>This Month</option>
+              <option value="Today">Today</option>
+              <option value="This Week">This Week</option>
+              <option value="This Month">This Month</option>
             </select>
           </div>
 
-          {/* Stacked Bar Chart with explicit pixel heights */}
+          {/* Stacked Bar Chart */}
           <div className="h-[140px] flex items-end justify-between gap-3 px-2 pt-2">
             {pipelineData.map((item, idx) => {
               const scale = barMaxHeightPx / maxTotal
@@ -202,18 +221,26 @@ const Dashboard = () => {
 
       </div>
 
-      {/* 2. MIDDLE ROW: LIVE CALL STATUS */}
+      {/* 2. MIDDLE ROW: LIVE CALL STATUS WITH WORKING FILTER 1 */}
       <div className="dashboard-card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-slate-800">Live Call Status</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-800">Live Call Status</h2>
+            {agentFilter !== 'All agents' && (
+              <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">
+                Filtered: {agentFilter}
+              </span>
+            )}
+          </div>
+          {/* Working Dropdown Filter 1 */}
           <select
             value={agentFilter}
             onChange={(e) => setAgentFilter(e.target.value)}
-            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1 text-slate-600 focus:outline-none cursor-pointer"
+            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1 text-slate-700 font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
           >
-            <option>All agents</option>
-            <option>AI Agents</option>
-            <option>Live Agents</option>
+            <option value="All agents">All agents</option>
+            <option value="AI Agents">AI Agents</option>
+            <option value="Live Agents">Live Agents</option>
           </select>
         </div>
 
@@ -263,106 +290,123 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Right: Live Agent Interaction Table */}
+          {/* Right: Live Agent Interaction Table filtered by Filter 1 */}
           <div className="flex-1 w-full overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-                  <th className="pb-2.5">Agent Name</th>
-                  <th className="pb-2.5">Lead Name</th>
-                  <th className="pb-2.5">Duration</th>
-                  <th className="pb-2.5">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {liveCalls.map((call) => (
-                  <tr key={call.id} className="hover:bg-slate-50/60 transition">
-                    <td className="py-2.5 flex items-center gap-2.5 font-semibold text-slate-800">
-                      <img
-                        src={call.avatar}
-                        alt={call.agentName}
-                        className="w-7 h-7 rounded-full object-cover border border-slate-200"
-                      />
-                      <span>{call.agentName}</span>
-                    </td>
-                    <td className="py-2.5 text-slate-600">{call.leadName}</td>
-                    <td className="py-2.5 font-mono text-slate-500">{call.duration}</td>
-                    <td className="py-2.5">
-                      {call.status === 'Connected' ? (
-                        <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">
-                          Connected
-                        </span>
-                      ) : (
-                        <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-orange-100 text-orange-700">
-                          Voicemail
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-      </div>
-
-      {/* 3. BOTTOM ROW: LEAD LIST MANAGEMENT & RECENT ACTIVITY FEED */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-        {/* Lead List Management */}
-        <div className="lg:col-span-7 dashboard-card p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-slate-800">Lead List Management</h2>
-              <select
-                value={leadSourceFilter}
-                onChange={(e) => setLeadSourceFilter(e.target.value)}
-                className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1 text-slate-600 focus:outline-none cursor-pointer"
-              >
-                <option>All Source</option>
-                <option>Marketing Leads</option>
-              </select>
-            </div>
-
-            <div className="overflow-x-auto">
+            {filteredLiveCalls.length > 0 ? (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-slate-400 font-semibold tracking-wider text-[10px] uppercase">
-                    <th className="pb-2">Lead Source</th>
-                    <th className="pb-2">Status</th>
-                    <th className="pb-2 text-right">Action</th>
+                  <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="pb-2.5">Agent Name</th>
+                    <th className="pb-2.5">Lead Name</th>
+                    <th className="pb-2.5">Duration</th>
+                    <th className="pb-2.5">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {leadLists.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3 font-semibold text-slate-800">{item.source}</td>
-                      <td className="py-3">
-                        {item.status === 'Imported' ? (
-                          <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">
-                            Imported
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredLiveCalls.map((call) => (
+                    <tr key={call.id} className="hover:bg-slate-50/60 transition">
+                      <td className="py-2.5 flex items-center gap-2.5 font-semibold text-slate-800">
+                        <img
+                          src={call.avatar}
+                          alt={call.agentName}
+                          className="w-7 h-7 rounded-full object-cover border border-slate-200"
+                        />
+                        <div>
+                          <span>{call.agentName}</span>
+                          <span className="block text-[10px] text-slate-400 font-normal">{call.agentType}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 text-slate-600">{call.leadName}</td>
+                      <td className="py-2.5 font-mono text-slate-500">{call.duration}</td>
+                      <td className="py-2.5">
+                        {call.status === 'Connected' ? (
+                          <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">
+                            Connected
                           </span>
                         ) : (
-                          <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">
-                            Complete
+                          <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-orange-100 text-orange-700">
+                            Voicemail
                           </span>
                         )}
-                      </td>
-                      <td className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="px-3 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition cursor-pointer">
-                            View
-                          </button>
-                          <button className="px-3.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition cursor-pointer shadow-xs">
-                            Start Call
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            ) : (
+              <div className="p-6 text-center text-xs text-slate-500 font-medium">
+                No active calls match filter: <strong>"{agentFilter}"</strong>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* 3. BOTTOM ROW: LEAD LIST MANAGEMENT & RECENT ACTIVITY FEED WITH WORKING FILTERS 2 & 3 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        {/* Lead List Management WITH WORKING FILTER 2 */}
+        <div className="lg:col-span-7 dashboard-card p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-bold text-slate-800">Lead List Management</h2>
+              {/* Working Dropdown Filter 2 */}
+              <select
+                value={leadSourceFilter}
+                onChange={(e) => setLeadSourceFilter(e.target.value)}
+                className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1 text-slate-700 font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
+              >
+                <option value="All Source">All Source</option>
+                <option value="Marketing Leads Q3">Marketing Leads Q3</option>
+                <option value="Marketing Leads Q4">Marketing Leads Q4</option>
+              </select>
+            </div>
+
+            <div className="overflow-x-auto">
+              {filteredLeadLists.length > 0 ? (
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-slate-400 font-semibold tracking-wider text-[10px] uppercase">
+                      <th className="pb-2">Lead Source</th>
+                      <th className="pb-2">Status</th>
+                      <th className="pb-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredLeadLists.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/60 transition">
+                        <td className="py-3 font-semibold text-slate-800">{item.source}</td>
+                        <td className="py-3">
+                          {item.status === 'Imported' ? (
+                            <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">
+                              Imported
+                            </span>
+                          ) : (
+                            <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">
+                              Complete
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button className="px-3 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition cursor-pointer">
+                              View
+                            </button>
+                            <button className="px-3.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition cursor-pointer shadow-xs">
+                              Start Call
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-6 text-center text-xs text-slate-500 font-medium">
+                  No lead source matching <strong>"{leadSourceFilter}"</strong>
+                </div>
+              )}
             </div>
           </div>
 
@@ -372,46 +416,54 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Recent Activity Feed */}
+        {/* Recent Activity Feed WITH WORKING FILTER 3 */}
         <div className="lg:col-span-5 dashboard-card p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-slate-800">Recent Activity Feed</h2>
+              {/* Working Dropdown Filter 3 */}
               <select
                 value={activityResultFilter}
                 onChange={(e) => setActivityResultFilter(e.target.value)}
-                className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-600 focus:outline-none cursor-pointer"
+                className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-700 font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
               >
-                <option>All result</option>
-                <option>Connected</option>
-                <option>Qualified</option>
+                <option value="All result">All result</option>
+                <option value="Connected">Connected</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Voicemail">Voicemail</option>
               </select>
             </div>
 
             <div className="space-y-4">
-              {activityFeed.map((act) => (
-                <div key={act.id} className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                      <PhoneCall className="w-4 h-4" />
+              {filteredActivityFeed.length > 0 ? (
+                filteredActivityFeed.map((act) => (
+                  <div key={act.id} className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                        <PhoneCall className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">{act.title}</p>
+                        <p className="text-xs font-medium mt-0.5 text-slate-600">
+                          Result:{' '}
+                          <span className={
+                            act.result === 'Connected' ? 'text-blue-600 font-bold' :
+                            act.result === 'Qualified' ? 'text-emerald-600 font-bold' :
+                            'text-orange-500 font-bold'
+                          }>
+                            {act.result}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">{act.title}</p>
-                      <p className="text-xs font-medium mt-0.5 text-slate-600">
-                        Result:{' '}
-                        <span className={
-                          act.result === 'Connected' ? 'text-blue-600 font-bold' :
-                          act.result === 'Qualified' ? 'text-emerald-600 font-bold' :
-                          'text-orange-500 font-bold'
-                        }>
-                          {act.result}
-                        </span>
-                      </p>
-                    </div>
+                    <span className="text-[11px] text-slate-400 font-medium">{act.time}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-medium">{act.time}</span>
+                ))
+              ) : (
+                <div className="p-6 text-center text-xs text-slate-500 font-medium">
+                  No activity logs matching result <strong>"{activityResultFilter}"</strong>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

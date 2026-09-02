@@ -14,7 +14,7 @@ export const AppProvider = ({ children }) => {
     ]
   })
 
-  // 2. AI Agents State (Change prompt, Gender, Language, Concurrency)
+  // 2. AI Agents State
   const [aiAgents, setAiAgents] = useState([
     {
       id: 'agent-1',
@@ -57,14 +57,14 @@ export const AppProvider = ({ children }) => {
     }
   ])
 
-  // 3. Live Agents (Human transfer targets with Routing Weights)
+  // 3. Live Agents (Human transfer targets)
   const [liveAgents, setLiveAgents] = useState([
     { id: 'live-1', name: 'John Doe', phone: '+1 (555) 019-2834', extension: '101', department: 'Sales', weight: 50, status: 'Available', currentTransfers: 1 },
     { id: 'live-2', name: 'Emily Clark', phone: '+1 (555) 019-5821', extension: '102', department: 'Real Estate', weight: 30, status: 'In Call', currentTransfers: 1 },
     { id: 'live-3', name: 'Michael Scott', phone: '+1 (555) 019-9942', extension: '103', department: 'Support', weight: 20, status: 'Available', currentTransfers: 0 }
   ])
 
-  // 4. Campaigns State (Hours, Loops, Transfer Config, Telegram, Auto-Purge leads)
+  // 4. Campaigns State
   const [campaigns, setCampaigns] = useState([
     {
       id: 'camp-1',
@@ -94,28 +94,31 @@ export const AppProvider = ({ children }) => {
       loopTimes: 1,
       distribution: 'shuffle',
       telegram: { enabled: true, botToken: 'bot123456:ABC-DEF...', chatId: '-1009876543' },
-      autoDeleteLeads: true, // leads deleted on completion!
+      autoDeleteLeads: true,
       leadsDeleted: true,
       transferWeights: { 'live-1': 60, 'live-2': 40 },
       createdAt: '2026-02-25'
     }
   ])
 
-  // 5. Live Call Status (Matches input_file_0.png layout table)
+  // 5. Live Call Status (Categorized by agentType)
   const [liveCalls, setLiveCalls] = useState([
-    { id: 'lc-1', agentName: 'Agent Name', leadName: 'Lead Name', duration: '00:00:00', status: 'Connected', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' },
-    { id: 'lc-2', agentName: 'Agent Name', leadName: 'Lead Name', duration: '00:00:30', status: 'Connected', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100' },
-    { id: 'lc-3', agentName: 'Frida Name', leadName: 'Marketing Leads', duration: '00:02:34', status: 'Voicemail', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }
+    { id: 'lc-1', agentName: 'Marco John', agentType: 'AI Agents', leadName: 'Marketing Leads Q3', duration: '00:00:00', status: 'Connected', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' },
+    { id: 'lc-2', agentName: 'Nova (AI SDR)', agentType: 'AI Agents', leadName: 'Marketing Leads Q4', duration: '00:00:30', status: 'Connected', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100' },
+    { id: 'lc-3', agentName: 'John Doe', agentType: 'Live Agents', leadName: 'Real Estate Lead', duration: '00:02:34', status: 'Voicemail', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
+    { id: 'lc-4', agentName: 'Emily Clark', agentType: 'Live Agents', leadName: 'Inbound Client', duration: '00:01:12', status: 'Connected', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100' }
   ])
 
-  // 6. Recent Activity Feed (Matches input_file_0.png)
+  // 6. Recent Activity Feed
   const [activityFeed, setActivityFeed] = useState([
     { id: 'act-1', type: 'call', title: 'Call Mathnanma (328)', result: 'Connected', time: '3 hours ago', statusColor: 'green' },
     { id: 'act-2', type: 'call', title: 'Call Mathnanma (42%)', result: 'Qualified', time: '4 hours ago', statusColor: 'emerald' },
-    { id: 'act-3', type: 'call', title: 'Call Call Duration (1:15)', result: 'Voicemail', time: '3 hours ago', statusColor: 'orange' }
+    { id: 'act-3', type: 'call', title: 'Call Duration (1:15)', result: 'Voicemail', time: '3 hours ago', statusColor: 'orange' },
+    { id: 'act-4', type: 'call', title: 'Call Tech Outreach (512)', result: 'Connected', time: '5 hours ago', statusColor: 'green' },
+    { id: 'act-5', type: 'call', title: 'Call Real Estate (210)', result: 'Qualified', time: '6 hours ago', statusColor: 'emerald' }
   ])
 
-  // 7. Telegram Notification Logs (Simulated)
+  // 7. Telegram Notification Logs
   const [telegramLogs, setTelegramLogs] = useState([
     {
       id: 'tg-1',
@@ -179,10 +182,22 @@ export const AppProvider = ({ children }) => {
     setCampaigns(prev => [created, ...prev])
   }
 
+  const distributeCampaignCalls = (campaignId, distributionMode, updatedTransferWeights) => {
+    setCampaigns(prev => prev.map(c => {
+      if (c.id === campaignId) {
+        return {
+          ...c,
+          distribution: distributionMode,
+          transferWeights: { ...c.transferWeights, ...updatedTransferWeights }
+        }
+      }
+      return c
+    }))
+  }
+
   const finishCampaign = (campId) => {
     setCampaigns(prev => prev.map(c => {
       if (c.id === campId) {
-        // Trigger Telegram update & Auto delete leads
         const logEntry = {
           id: `tg-${Date.now()}`,
           campaignName: c.name,
@@ -219,6 +234,7 @@ export const AppProvider = ({ children }) => {
       setLiveAgents,
       campaigns,
       createCampaign,
+      distributeCampaignCalls,
       finishCampaign,
       liveCalls,
       activityFeed,
