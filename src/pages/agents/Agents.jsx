@@ -12,15 +12,6 @@ import {
   X,
 } from "lucide-react";
 
-const PRESET_AVATARS = [
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
-];
-
 const Agents = () => {
   const { aiAgents, updateAiAgent, addAiAgent } = useApp();
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -36,7 +27,6 @@ const Agents = () => {
 
   // Add agent form state
   const [newAgentName, setNewAgentName] = useState("");
-  const [newAgentAvatar, setNewAgentAvatar] = useState(PRESET_AVATARS[0]);
   const [newAgentPrompt, setNewAgentPrompt] = useState("");
   const [newAgentGender, setNewAgentGender] = useState("Female");
   const [newAgentLanguage, setNewAgentLanguage] = useState("English (US)");
@@ -80,7 +70,6 @@ const Agents = () => {
 
     addAiAgent({
       name: newAgentName.trim(),
-      avatar: newAgentAvatar,
       prompt:
         newAgentPrompt.trim() ||
         "You are a helpful AI sales representative. Introduce our service, answer caller questions politely, and qualify interested leads.",
@@ -98,7 +87,6 @@ const Agents = () => {
       setIsAddModalOpen(false);
       // Reset form
       setNewAgentName("");
-      setNewAgentAvatar(PRESET_AVATARS[0]);
       setNewAgentPrompt("");
       setNewAgentGender("Female");
       setNewAgentLanguage("English (US)");
@@ -140,18 +128,9 @@ const Agents = () => {
             <div>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <img
-                      src={
-                        agent.avatar ||
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-                      }
-                      alt={agent.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-blue-500/20"
-                    />
-                    {agent.status === "Active" && (
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
-                    )}
+                  {/* Bot Icon Badge replacing Avatar Image */}
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+                    <Bot className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-base">
@@ -284,28 +263,6 @@ const Agents = () => {
                   placeholder="e.g. Alex (SaaS Closer AI), Priya (Customer Support)"
                   className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-white text-slate-800 font-medium"
                 />
-              </div>
-
-              {/* Avatar Selector */}
-              <div>
-                <label className="text-xs font-semibold text-slate-700 mb-2 block">
-                  Choose Avatar Image
-                </label>
-                <div className="flex items-center gap-3 flex-wrap">
-                  {PRESET_AVATARS.map((av, idx) => (
-                    <img
-                      key={idx}
-                      src={av}
-                      alt="Avatar option"
-                      onClick={() => setNewAgentAvatar(av)}
-                      className={`w-11 h-11 rounded-full object-cover cursor-pointer border-2 transition ${
-                        newAgentAvatar === av
-                          ? "border-blue-600 scale-110 shadow-md ring-2 ring-blue-500/30"
-                          : "border-slate-200 opacity-70 hover:opacity-100"
-                      }`}
-                    />
-                  ))}
-                </div>
               </div>
 
               {/* System Prompt */}
