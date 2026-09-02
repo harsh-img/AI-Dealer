@@ -1,53 +1,101 @@
-import React, { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/useAuth'
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    // Simulated login for MVP demonstration
-    const mockUser = { name: email.split('@')[0] || 'User', email }
-    const mockToken = 'mock_jwt_token_' + Date.now()
-    login(mockUser, mockToken)
-    navigate(from, { replace: true })
-  }
+    e.preventDefault();
+    setError("");
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
+    // Fixed credentials check
+    if (trimmedEmail === "admin@gmail.com" && trimmedPassword === "password") {
+      const mockUser = { name: "Superadmin", email: "admin@gmail.com" };
+      const mockToken = "mock_jwt_token_" + Date.now();
+      login(mockUser, mockToken);
+      navigate(from, { replace: true });
+    } else {
+      setError("Invalid credentials! Please use admin@gmail.com and password");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:py-12">
       <div className="w-full max-w-md space-y-6 rounded-2xl bg-white p-6 sm:p-8 shadow-xl border border-slate-200/80">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/30 mb-3">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"
+              />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Sign In</h2>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-500">Welcome back to AI Dialer MVP</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            Sign In
+          </h2>
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
+            Welcome back to AI Dialer MVP
+          </p>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 animate-in fade-in duration-150 flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-rose-500 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-slate-700">Email Address</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-700">
+              Email Address
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="admin@gmail.com"
               required
               className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-slate-700">Password</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-700">
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -67,14 +115,17 @@ const Login = () => {
         </form>
 
         <p className="text-center text-xs sm:text-sm text-slate-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-700 transition">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="font-semibold text-indigo-600 hover:text-indigo-700 transition"
+          >
             Sign up
           </Link>
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
