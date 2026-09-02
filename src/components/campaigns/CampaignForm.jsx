@@ -122,7 +122,7 @@ const CampaignForm = ({ initialValues, isEdit = false }) => {
         </div>
       </div>
 
-      {/* 2. Leads CSV Upload & Auto-Purge Privacy Notice */}
+      {/* 2. Leads CSV Upload */}
       <div className="dashboard-card p-6 space-y-4">
         <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
           <div>
@@ -134,10 +134,6 @@ const CampaignForm = ({ initialValues, isEdit = false }) => {
               Upload contact numbers in CSV format.
             </p>
           </div>
-          <span className="px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold flex items-center gap-1">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            Auto-Purge Lead Data Notice
-          </span>
         </div>
 
         <input
@@ -167,17 +163,6 @@ const CampaignForm = ({ initialValues, isEdit = false }) => {
               <p className="text-[11px] text-slate-400">Supports phone number column, customer name, metadata (Max 10MB)</p>
             </div>
           )}
-        </div>
-
-        {/* Lead Privacy Rule Note Banner */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold">Strict Privacy Rule Enforced:</p>
-            <p className="text-[11px] text-amber-800 mt-0.5">
-              We do not manage or retain your lead contact databases. Once this campaign finishes, all uploaded lead files and contact logs are <strong>automatically deleted</strong> to ensure total privacy.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -266,92 +251,6 @@ const CampaignForm = ({ initialValues, isEdit = false }) => {
             </select>
           </div>
         </div>
-      </div>
-
-      {/* 4. Live Agents Transfer Setup & Routing Weights */}
-      <div className="dashboard-card p-6 space-y-4">
-        <div className="border-b border-slate-100 pb-3">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600" />
-            Live Agent Transfer Setup & Routing Weights
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Configure human live agents who receive transferred calls and set routing weight percentages.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {liveAgents.map((ag) => (
-            <div key={ag.id} className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold text-slate-800">{ag.name} <span className="font-normal text-slate-500">({ag.department})</span></p>
-                <p className="text-[11px] text-slate-500">{ag.phone} • Ext: {ag.extension}</p>
-              </div>
-
-              <div className="flex items-center gap-3 w-48">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={transferWeights[ag.id] || 0}
-                  onChange={(e) => handleWeightChange(ag.id, e.target.value)}
-                  className="w-full accent-blue-600 cursor-pointer"
-                />
-                <span className="text-xs font-bold text-blue-600 min-w-[36px] text-right">
-                  {transferWeights[ag.id] || 0}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 5. Telegram & Finished Campaign Stats Update */}
-      <div className="dashboard-card p-6 space-y-4">
-        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Send className="w-5 h-5 text-blue-600" />
-              Telegram Stats Update on Campaign Finish
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Automatically broadcast final campaign analytics report to your Telegram channel when finished.
-            </p>
-          </div>
-
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={telegramEnabled}
-              onChange={(e) => setTelegramEnabled(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          </label>
-        </div>
-
-        {telegramEnabled && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Telegram Bot Token</label>
-              <input
-                type="text"
-                value={telegramBotToken}
-                onChange={(e) => setTelegramBotToken(e.target.value)}
-                className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Telegram Chat / Channel ID</label>
-              <input
-                type="text"
-                value={telegramChatId}
-                onChange={(e) => setTelegramChatId(e.target.value)}
-                className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Form Action */}
