@@ -1,0 +1,42 @@
+[
+  {
+    "id": "notif-001",
+    "title": "Campaign Completed",
+    "description": "Q1 SaaS Outbound Outreach has successfully finished dialing all 1,250 leads.",
+    "time": "10 minutes ago",
+    "read": false,
+    "type": "campaign"
+  },
+  {
+    "id": "notif-002",
+    "title": "Call Transferred",
+    "description": "Lead Vikram Malhotra was qualified and transferred to live SDR Rohan Sharma.",
+    "time": "45 minutes ago",
+    "read": false,
+    "type": "call"
+  },
+  {
+    "id": "notif-003",
+    "title": "Low Balance Warning",
+    "description": "Your available wallet balance is ₹1,450. Recharge soon to ensure uninterrupted dialing.",
+    "time": "2 hours ago",
+    "read": false,
+    "type": "wallet"
+  },
+  {
+    "id": "notif-004",
+    "title": "Wallet Recharge Successful",
+    "description": "₹10,000 was credited to your wallet via online payment.",
+    "time": "1 day ago",
+    "read": true,
+    "type": "payment"
+  },
+  {
+    "id": "notif-005",
+    "title": "AI Agent Updated",
+    "description": "Voice configuration for Real Estate Specialist was modified.",
+    "time": "2 days ago",
+    "read": true,
+    "type": "system"
+  }
+]

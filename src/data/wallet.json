@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "balance": 12450,
+    "totalAdded": 50000,
+    "totalUsed": 37550,
+    "currency": "₹",
+    "ratePerMinute": 1.5,
+    "estimatedRemainingMinutes": 8300
+  },
+  "transactions": [
+    {
+      "id": "TXN-98401",
+      "date": "2026-03-01 16:45",
+      "type": "Debit",
+      "amount": 340,
+      "description": "Outbound Campaign: Q1 SaaS Outbound Outreach (226 mins)",
+      "status": "Successful",
+      "method": "Usage Deduction"
+    },
+    {
+      "id": "TXN-98320",
+      "date": "2026-02-28 11:30",
+      "type": "Credit",
+      "amount": 5000,
+      "description": "Wallet Recharge - UPI Payment",
+      "status": "Successful",
+      "method": "UPI / GPay"
+    },
+    {
+      "id": "TXN-98115",
+      "date": "2026-02-27 18:20",
+      "type": "Debit",
+      "amount": 520,
+      "description": "Outbound Campaign: Healthcare Appointment Reminders (346 mins)",
+      "status": "Successful",
+      "method": "Usage Deduction"
+    },
+    {
+      "id": "TXN-97994",
+      "date": "2026-02-25 14:15",
+      "type": "Debit",
+      "amount": 180,
+      "description": "Outbound Campaign: Enterprise Inbound MQL Triage (120 mins)",
+      "status": "Successful",
+      "method": "Usage Deduction"
+    },
+    {
+      "id": "TXN-97810",
+      "date": "2026-02-24 09:00",
+      "type": "Credit",
+      "amount": 10000,
+      "description": "Wallet Top-up - Net Banking",
+      "status": "Successful",
+      "method": "Net Banking"
+    },
+    {
+      "id": "TXN-97645",
+      "date": "2026-02-22 17:50",
+      "type": "Debit",
+      "amount": 420,
+      "description": "Live Agent Call Escalations (280 mins)",
+      "status": "Successful",
+      "method": "Usage Deduction"
+    },
+    {
+      "id": "TXN-97502",
+      "date": "2026-02-20 12:10",
+      "type": "Credit",
+      "amount": 2000,
+      "description": "Wallet Recharge - Corporate Card",
+      "status": "Failed",
+      "method": "Credit Card"
+    },
+    {
+      "id": "TXN-97380",
+      "date": "2026-02-18 10:35",
+      "type": "Debit",
+      "amount": 650,
+      "description": "Outbound Campaign: Real Estate Lead Qualification (433 mins)",
+      "status": "Successful",
+      "method": "Usage Deduction"
+    },
+    {
+      "id": "TXN-97210",
+      "date": "2026-02-15 15:00",
+      "type": "Credit",
+      "amount": 15000,
+      "description": "Initial Balance Provisioning",
+      "status": "Successful",
+      "method": "Bank Transfer"
+    },
+    {
+      "id": "TXN-97080",
+      "date": "2026-02-14 11:20",
+      "type": "Credit",
+      "amount": 1000,
+      "description": "Promotional Welcome Credit",
+      "status": "Successful",
+      "method": "Promo Code"
+    }
+  ]
+}

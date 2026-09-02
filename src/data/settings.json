@@ -1,0 +1,19 @@
+{
+  "general": {
+    "companyName": "AI Dialer Technologies Inc.",
+    "email": "admin@aidialer.com",
+    "phone": "+1 (555) 890-1234"
+  },
+  "calling": {
+    "defaultStartTime": "09:00",
+    "defaultEndTime": "18:00",
+    "defaultMaxAttempts": 3,
+    "defaultConcurrency": 10
+  },
+  "notifications": {
+    "emailNotifications": true,
+    "campaignCompleted": true,
+    "lowWalletBalance": true,
+    "callTransfer": false
+  }
+}

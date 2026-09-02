@@ -1,0 +1,95 @@
+{
+  "calls": [
+    {
+      "id": "call-001",
+      "leadName": "Vikram Malhotra",
+      "phone": "+1 (555) 345-9871",
+      "campaign": "Q1 SaaS Outbound Outreach",
+      "interest": "Interested",
+      "dateTime": "2026-03-01 15:40"
+    },
+    {
+      "id": "call-002",
+      "leadName": "Sarah Jenkins",
+      "phone": "+1 (555) 456-1123",
+      "campaign": "Real Estate Lead Qualification",
+      "interest": "Interested",
+      "dateTime": "2026-03-01 14:15"
+    },
+    {
+      "id": "call-003",
+      "leadName": "Michael Chang",
+      "phone": "+1 (555) 567-3344",
+      "campaign": "Healthcare Appointment Reminders",
+      "interest": "Interested",
+      "dateTime": "2026-03-01 12:30"
+    },
+    {
+      "id": "call-004",
+      "leadName": "David Miller",
+      "phone": "+1 (555) 678-8899",
+      "campaign": "Enterprise Inbound MQL Triage",
+      "interest": "Not Interested",
+      "dateTime": "2026-03-01 11:10"
+    },
+    {
+      "id": "call-005",
+      "leadName": "Ananya Desai",
+      "phone": "+1 (555) 789-2211",
+      "campaign": "Q1 SaaS Outbound Outreach",
+      "interest": "Unknown",
+      "dateTime": "2026-03-01 10:05"
+    },
+    {
+      "id": "call-006",
+      "leadName": "Robert Taylor",
+      "phone": "+1 (555) 890-4455",
+      "campaign": "Real Estate Lead Qualification",
+      "interest": "Unknown",
+      "dateTime": "2026-02-28 17:20"
+    },
+    {
+      "id": "call-007",
+      "leadName": "Emily Watson",
+      "phone": "+1 (555) 901-7788",
+      "campaign": "Healthcare Appointment Reminders",
+      "interest": "Interested",
+      "dateTime": "2026-02-28 15:45"
+    },
+    {
+      "id": "call-008",
+      "leadName": "Carlos Mendoza",
+      "phone": "+1 (555) 012-9900",
+      "campaign": "Enterprise Inbound MQL Triage",
+      "interest": "Unknown",
+      "dateTime": "2026-02-28 14:00"
+    },
+    {
+      "id": "call-009",
+      "leadName": "Kavita Rao",
+      "phone": "+1 (555) 123-6677",
+      "campaign": "Q1 SaaS Outbound Outreach",
+      "interest": "Interested",
+      "dateTime": "2026-02-28 11:30"
+    },
+    {
+      "id": "call-010",
+      "leadName": "Jason Bourne",
+      "phone": "+1 (555) 234-8811",
+      "campaign": "Real Estate Lead Qualification",
+      "interest": "Not Interested",
+      "dateTime": "2026-02-27 16:15"
+    }
+  ],
+  "campaignOptions": [
+    "Q1 SaaS Outbound Outreach",
+    "Real Estate Lead Qualification",
+    "Healthcare Appointment Reminders",
+    "Enterprise Inbound MQL Triage"
+  ],
+  "interestOptions": [
+    "Interested",
+    "Not Interested",
+    "Unknown"
+  ]
+}
