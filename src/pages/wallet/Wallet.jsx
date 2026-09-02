@@ -1,397 +1,320 @@
-import React, { useState } from "react";
-import walletData from "../../data/wallet.json";
-import DataTable from "../../components/common/DataTable";
-import ActionMenu from "../../components/common/ActionMenu";
-import AddMoneyModal from "../../components/wallet/AddMoneyModal";
-import TransactionDetailsModal from "../../components/wallet/TransactionDetailsModal";
-
-const getStatusBadge = (status) => {
-  switch (status?.toLowerCase()) {
-    case "successful":
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          Successful
-        </span>
-      );
-    case "pending":
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-          Pending
-        </span>
-      );
-    case "failed":
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          Failed
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-          {status}
-        </span>
-      );
-  }
-};
+import React, { useState } from 'react'
+import { useApp } from '../../context/AppContext'
+import { Wallet as WalletIcon, Plus, ArrowUpRight, Calculator, Check, PhoneCall, ShieldCheck, DollarSign } from 'lucide-react'
 
 const Wallet = () => {
-  const [summary, setSummary] = useState(walletData.summary || {});
-  const [transactions, setTransactions] = useState(
-    walletData.transactions || [],
-  );
-  const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const { wallet, topUpWallet, transferToVoip } = useApp()
+  const [topUpAmount, setTopUpAmount] = useState('500')
+  const [showTopUpModal, setShowTopUpModal] = useState(false)
+  const [voipTransferAmount, setVoipTransferAmount] = useState('200')
+  const [transferSuccess, setTransferSuccess] = useState(false)
 
-  // Handle local state update when money is added via AddMoneyModal
-  const handleAddMoneySuccess = (amount) => {
-    const newTxn = {
-      id: `TXN-${String(Date.now()).slice(-5)}`,
-      date: new Date().toISOString().replace("T", " ").slice(0, 16),
-      type: "Credit",
-      amount: Number(amount),
-      description: "Wallet Recharge - Online Payment",
-      status: "Successful",
-      method: "UPI / Online Transfer",
-    };
+  // VOIP Calculation State (Matches input_file_3.png requirement)
+  const [calcCalls, setCalcCalls] = useState(5000)
+  const [calcAvgMins, setCalcAvgMins] = useState(1.5)
+  const [calcRatePerMin, setCalcRatePerMin] = useState(0.015)
+  const [calcConcurrency, setCalcConcurrency] = useState(20)
 
-    setSummary((prev) => {
-      const newBal = (prev.balance || 0) + Number(amount);
-      return {
-        ...prev,
-        balance: newBal,
-        totalAdded: (prev.totalAdded || 0) + Number(amount),
-        estimatedRemainingMinutes: Math.round(
-          newBal / (prev.ratePerMinute || 1.5),
-        ),
-      };
-    });
+  // Calculations
+  const estimatedTotalMins = Math.round(calcCalls * calcAvgMins)
+  const calculatedVoipNeed = (estimatedTotalMins * calcRatePerMin).toFixed(2)
 
-    setTransactions((prev) => [newTxn, ...prev]);
-  };
+  const handleTopUpSubmit = (e) => {
+    e.preventDefault()
+    if (!topUpAmount || Number(topUpAmount) <= 0) return
+    topUpWallet(Number(topUpAmount))
+    setShowTopUpModal(false)
+  }
 
-  // DataTable columns definition
-  const columns = [
-    {
-      key: "date",
-      label: "Date",
-      render: (val) => (
-        <span className="text-slate-600 font-medium whitespace-nowrap text-xs">
-          {val}
-        </span>
-      ),
-    },
-    {
-      key: "id",
-      label: "Transaction ID",
-      render: (val, row) => (
-        <button
-          type="button"
-          onClick={() => setSelectedTransaction(row)}
-          className="font-mono font-bold text-slate-900 hover:text-indigo-600 transition cursor-pointer"
-        >
-          {val}
-        </button>
-      ),
-    },
-    {
-      key: "type",
-      label: "Type",
-      render: (val) => {
-        const isCredit = val?.toLowerCase() === "credit";
-        return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold ${
-              isCredit
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-slate-100 text-slate-700 border border-slate-200"
-            }`}
-          >
-            {val}
-          </span>
-        );
-      },
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      render: (val, row) => {
-        const isCredit = row.type?.toLowerCase() === "credit";
-        return (
-          <span
-            className={`font-bold ${
-              isCredit ? "text-emerald-600" : "text-slate-900"
-            }`}
-          >
-            {isCredit ? "+" : "-"}₹{Number(val || 0).toLocaleString()}
-          </span>
-        );
-      },
-    },
-    {
-      key: "description",
-      label: "Description",
-      render: (val) => (
-        <span
-          className="text-slate-700 font-medium line-clamp-1 max-w-xs sm:max-w-md"
-          title={val}
-        >
-          {val}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (val) => getStatusBadge(val),
-    },
-  ];
-
-  const estimatedMins = Math.round(
-    (summary.balance || 0) / (summary.ratePerMinute || 1.5),
-  );
+  const handleAllocateToVoip = () => {
+    const success = transferToVoip(Number(calculatedVoipNeed))
+    if (success) {
+      setTransferSuccess(true)
+      setTimeout(() => setTransferSuccess(false), 2000)
+    } else {
+      alert('Insufficient wallet balance. Please top up your wallet first!')
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-10">
-      {/* 1. Page Header & Add Money Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100">
+    <div className="space-y-8 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Wallet & Billing
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Monitor real-time calling balance, usage breakdown, and billing
-            transaction logs.
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Client Wallet & VOIP Balance</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Self-service top-up wallet and VOIP carrier balance calculator.
           </p>
         </div>
-
         <button
-          type="button"
-          onClick={() => setIsAddMoneyOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-indigo-600/20 transition cursor-pointer self-start sm:self-auto"
+          onClick={() => setShowTopUpModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer"
         >
-          <span>+ Add Money</span>
+          <Plus className="w-4 h-4" />
+          <span>Top Up Wallet Balance</span>
         </button>
       </div>
 
-      {/* 2. Wallet Summary Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Available Balance Card */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Available Balance
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
+      {/* 1. WALLET SUMMARY CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        {/* Card 1: Primary Wallet Balance */}
+        <div className="dashboard-card p-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-blue-100">
+              <span className="text-xs font-semibold uppercase tracking-wider">Primary Client Wallet</span>
+              <WalletIcon className="w-5 h-5 text-blue-200" />
+            </div>
+            <div className="mt-3">
+              <span className="text-3xl font-extrabold tracking-tight">
+                ${wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
-          <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ₹
-              {Number(summary.balance || 0).toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-600 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Active & Ready for calls</span>
+          <div className="mt-4 pt-3 border-t border-blue-500/50 flex items-center justify-between text-xs text-blue-100">
+            <span>Unified Balance</span>
+            <button
+              onClick={() => setShowTopUpModal(true)}
+              className="px-2.5 py-1 rounded bg-white/20 hover:bg-white/30 font-bold transition text-[11px]"
+            >
+              + Instant Add
+            </button>
           </div>
         </div>
 
-        {/* Total Added */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Total Added
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 11l5-5m0 0l5 5m-5-5v12"
-                />
-              </svg>
+        {/* Card 2: VOIP Carrier Account Balance */}
+        <div className="dashboard-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-semibold uppercase tracking-wider">VOIP Account Trunk Balance</span>
+              <PhoneCall className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div className="mt-3">
+              <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                ${wallet.voipBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
-          <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ₹{Number(summary.totalAdded || 0).toLocaleString("en-IN")}
-            </span>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Lifetime recharges credited
+          <p className="text-xs text-slate-500 mt-2">
+            Allocated for active call minutes & SIP trunks.
           </p>
         </div>
 
-        {/* Total Used */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Total Used
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 13l-5 5m0 0l-5-5m5 5V6"
-                />
-              </svg>
+        {/* Card 3: Standard VOIP Tariff */}
+        <div className="dashboard-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-semibold uppercase tracking-wider">VOIP Call Rate</span>
+              <DollarSign className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="mt-3">
+              <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                ${wallet.ratePerMin}
+                <span className="text-xs font-normal text-slate-500"> / min</span>
+              </span>
             </div>
           </div>
-          <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ₹{Number(summary.totalUsed || 0).toLocaleString("en-IN")}
-            </span>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Campaign & agent talk-time usage
+          <p className="text-xs text-slate-500 mt-2">
+            Standard outbound trunk rate per answered call minute.
           </p>
         </div>
 
-        {/* Estimated Remaining Minutes */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Remaining Talk-Time
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      </div>
+
+      {/* 2. VOIP BALANCE CALCULATOR (Matches input_file_3.png requirement) */}
+      <div className="dashboard-card p-6 space-y-6">
+        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-blue-600" />
+              VOIP Account Balance Calculator
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Calculate exact VOIP account balance needed for upcoming campaign volumes.
+            </p>
+          </div>
+          <span className="px-2.5 py-1 rounded bg-blue-50 text-blue-700 text-[11px] font-bold">
+            Auto Calculation
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Left Inputs (Col 7) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Estimated Total Calls</label>
+                <input
+                  type="number"
+                  value={calcCalls}
+                  onChange={(e) => setCalcCalls(Number(e.target.value))}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
                 />
-              </svg>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Avg. Call Duration (minutes)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={calcAvgMins}
+                  onChange={(e) => setCalcAvgMins(Number(e.target.value))}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Rate per Minute ($)</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  value={calcRatePerMin}
+                  onChange={(e) => setCalcRatePerMin(Number(e.target.value))}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Concurrent Lines Needed</label>
+                <input
+                  type="number"
+                  value={calcConcurrency}
+                  onChange={(e) => setCalcConcurrency(Number(e.target.value))}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
             </div>
           </div>
-          <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-indigo-600 tracking-tight">
-              ~{estimatedMins.toLocaleString()}{" "}
-              <span className="text-sm font-semibold text-slate-500">mins</span>
-            </span>
+
+          {/* Right Summary & Action (Col 5) */}
+          <div className="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between space-y-4">
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Calculation Output</h3>
+              
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between text-slate-600">
+                  <span>Estimated Total Minutes:</span>
+                  <span className="font-bold text-slate-800 font-mono">{estimatedTotalMins.toLocaleString()} mins</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Target Concurrency:</span>
+                  <span className="font-bold text-slate-800 font-mono">{calcConcurrency} lines</span>
+                </div>
+                <div className="border-t border-slate-200 pt-2 flex justify-between items-center">
+                  <span className="font-bold text-slate-900">Required VOIP Balance:</span>
+                  <span className="text-2xl font-extrabold text-blue-600 font-mono">${calculatedVoipNeed}</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAllocateToVoip}
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition cursor-pointer"
+            >
+              {transferSuccess ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Funds Allocated to VOIP!</span>
+                </>
+              ) : (
+                <>
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Allocate ${calculatedVoipNeed} to VOIP Account</span>
+                </>
+              )}
+            </button>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Based on ₹{summary.ratePerMinute || 1.5}/min standard tariff
-          </p>
+
         </div>
       </div>
 
-      {/* 3. Transaction History DataTable */}
-      <DataTable
-        title="Transaction History"
-        data={transactions}
-        columns={columns}
-        searchKeys={["id", "description", "type", "status"]}
-        searchPlaceholder="Search by transaction ID, description..."
-        statusFilter={{
-          label: "STATUS",
-          key: "status",
-          options: [
-            { label: "Successful", value: "Successful" },
-            { label: "Pending", value: "Pending" },
-            { label: "Failed", value: "Failed" },
-          ],
-        }}
-        dropdownFilter={{
-          label: "TYPE",
-          key: "type",
-          options: [
-            { label: "All Types", value: "all" },
-            { label: "Credit", value: "Credit" },
-            { label: "Debit", value: "Debit" },
-          ],
-        }}
-        showExport={true}
-        exportFileName="wallet-transactions"
-        actions={(row) => (
-          <ActionMenu
-            items={[
-              {
-                label: "View Details",
-                icon: (
-                  <svg
-                    className="w-4 h-4 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                ),
-                onClick: () => setSelectedTransaction(row),
-              },
-            ]}
-          />
-        )}
-        emptyState="No Transactions Found"
-        pagination={{
-          pageSize: 10,
-        }}
-      />
+      {/* 3. TRANSACTIONS LOG TABLE */}
+      <div className="dashboard-card p-6">
+        <h2 className="text-base font-bold text-slate-800 mb-4">Wallet Transactions History</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
+                <th className="p-3">Date</th>
+                <th className="p-3">Type</th>
+                <th className="p-3">Description</th>
+                <th className="p-3 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {wallet.transactions.map((tx) => (
+                <tr key={tx.id} className="hover:bg-slate-50 transition">
+                  <td className="p-3 text-slate-500 font-mono">{tx.date}</td>
+                  <td className="p-3">
+                    <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                      tx.type === 'Credit' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {tx.type}
+                    </span>
+                  </td>
+                  <td className="p-3 text-slate-800 font-medium">{tx.description}</td>
+                  <td className="p-3 text-right font-bold font-mono text-slate-900">
+                    ${tx.amount.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* 4. Add Money Modal */}
-      <AddMoneyModal
-        open={isAddMoneyOpen}
-        onClose={() => setIsAddMoneyOpen(false)}
-        onAddSuccess={handleAddMoneySuccess}
-      />
+      {/* Self Top-Up Modal */}
+      {showTopUpModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+            <h3 className="font-bold text-slate-900 text-base">Top Up Wallet Balance</h3>
+            <form onSubmit={handleTopUpSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Select Amount ($)</label>
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {['100', '500', '1000'].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setTopUpAmount(amt)}
+                      className={`py-2 rounded-lg text-xs font-bold border transition ${
+                        topUpAmount === amt ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      ${amt}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  value={topUpAmount}
+                  onChange={(e) => setTopUpAmount(e.target.value)}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
+                />
+              </div>
 
-      {/* 5. Transaction Details Modal */}
-      <TransactionDetailsModal
-        open={Boolean(selectedTransaction)}
-        transaction={selectedTransaction}
-        onClose={() => setSelectedTransaction(null)}
-      />
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTopUpModal(false)}
+                  className="px-4 py-2 rounded text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-xs"
+                >
+                  Confirm Instant Top-Up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default Wallet;
+export default Wallet
